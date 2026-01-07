@@ -44,135 +44,7 @@ except ImportError:
     sys.exit(1)
 
 
-# ============================================================================
-# 启动画面
-# ============================================================================
-class SplashScreen(QWidget):
-    """启动画面"""
-
-    def __init__(self):
-        super().__init__()
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-
-        # 设置窗口大小
-        self.setFixedSize(400, 200)
-
-        # 居中显示
-        screen_geometry = QApplication.primaryScreen().geometry()
-        x = (screen_geometry.width() - self.width()) // 2
-        y = (screen_geometry.height() - self.height()) // 2
-        self.move(x, y)
-
-        # 设置样式
-        self.setStyleSheet("""
-            QWidget {
-                background-color: #1e4682;
-                border-radius: 10px;
-                border: 2px solid #2a5caa;
-            }
-        """)
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(20, 20, 20, 20)
-
-        # 标题
-        title_label = QLabel("音乐标签批量编辑器")
-        title_label.setStyleSheet("""
-            QLabel {
-                color: white;
-                font-size: 28px;
-                font-weight: bold;
-                font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-            }
-        """)
-        title_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(title_label)
-
-        layout.addSpacing(20)
-
-        # 版本信息
-        version_label = QLabel("Version 1.0.0")
-        version_label.setStyleSheet("""
-            QLabel {
-                color: #c8dcff;
-                font-size: 14px;
-                font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-            }
-        """)
-        version_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(version_label)
-
-        layout.addSpacing(30)
-
-        # 加载提示
-        self.loading_label = QLabel("正在初始化...")
-        self.loading_label.setStyleSheet("""
-            QLabel {
-                color: #b4c9ff;
-                font-size: 12px;
-                font-family: 'Microsoft YaHei', 'Arial', sans-serif;
-            }
-        """)
-        self.loading_label.setAlignment(Qt.AlignCenter)
-        layout.addWidget(self.loading_label)
-
-        # 进度条
-        self.progress_bar = QProgressBar()
-        self.progress_bar.setRange(0, 100)
-        self.progress_bar.setTextVisible(False)
-        self.progress_bar.setStyleSheet("""
-            QProgressBar {
-                border: 1px solid #2a5caa;
-                border-radius: 5px;
-                background-color: #0d2a5c;
-                height: 10px;
-            }
-            QProgressBar::chunk {
-                background-color: qlineargradient(
-                    x1:0, y1:0, x2:1, y2:0,
-                    stop:0 #4a9eff, stop:1 #2a5caa
-                );
-                border-radius: 5px;
-            }
-        """)
-        layout.addWidget(self.progress_bar)
-
-        # 定时器模拟进度
-        self.progress_value = 0
-        self.timer = QTimer()
-        self.timer.timeout.connect(self.update_progress)
-        self.timer.start(30)  # 30ms更新一次
-
-    def update_progress(self):
-        """更新进度"""
-        self.progress_value += 1
-        self.progress_bar.setValue(self.progress_value)
-
-        # 根据进度更新文字
-        if self.progress_value < 30:
-            self.loading_label.setText("正在初始化...")
-        elif self.progress_value < 60:
-            self.loading_label.setText("加载模块...")
-        elif self.progress_value < 90:
-            self.loading_label.setText("准备界面...")
-        else:
-            self.loading_label.setText("启动完成...")
-
-        if self.progress_value >= 100:
-            self.timer.stop()
-            self.close()
-
-    def show_and_wait(self, duration=3000):
-        """显示启动画面并等待"""
-        self.show()
-        QApplication.processEvents()
-        time.sleep(duration / 1000)
-
-
-# ============================================================================
 # 操作类型枚举
-# ============================================================================
 class OperationType(Enum):
     REPLACE = "替换"
     INSERT_TEXT_PREFIX = "插入文本前缀"
@@ -1525,10 +1397,6 @@ class MusicTagEditor(QMainWindow):
         self.setWindowTitle("音乐标签批量编辑器")
         self.setGeometry(100, 100, 1200, 800)
 
-        # 设置窗口图标（如果存在）
-        if os.path.exists("icon.ico"):
-            self.setWindowIcon(QIcon("icon.ico"))
-
         # 创建界面
         self.setup_ui()
 
@@ -2279,18 +2147,8 @@ def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
 
-    # 显示启动画面
-    splash = SplashScreen()
-    splash.show()
-
-    # 模拟加载过程
-    QTimer.singleShot(2000, splash.close)
-
-    # 创建主窗口
     window = MusicTagEditor()
-
-    # 在启动画面关闭后显示主窗口
-    QTimer.singleShot(2200, window.show)
+    window.show()
 
     sys.exit(app.exec_())
 
